@@ -1,4 +1,2 @@
 .env
 .local.env
-go.mod
-go.sum
