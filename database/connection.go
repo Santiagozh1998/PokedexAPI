@@ -18,19 +18,24 @@ var (
 
 func ConnectDatabase() error {
 
-	err = godotenv.Load(".env")
-	if err != nil {
-		fmt.Println("ENVIROMENT VARIABLES FAILED.")
-	} else {
-		once.Do(func() {
-			db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
-			if err != nil {
-				fmt.Println("DATABASE CONNECTION FAILED.")
-			}
-			db.SetMaxOpenConns(20)
-			db.SetMaxIdleConns(10)
-		})
+	databaseUrl := os.Getenv("DATABASE_URL")
+	if databaseUrl == "" {
+		err = godotenv.Load(".env")
+		if err != nil {
+			return err
+		} else {
+			databaseUrl = os.Getenv("DATABASE_URL")
+		}
 	}
+
+	once.Do(func() {
+		db, err = sql.Open("postgres", databaseUrl)
+		if err != nil {
+			fmt.Println("DATABASE CONNECTION FAILED.")
+		}
+		db.SetMaxOpenConns(20)
+		db.SetMaxIdleConns(10)
+	})
 	return err
 }
 
