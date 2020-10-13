@@ -126,7 +126,7 @@ func getPokemonWeaknesses(id string) ([]Type, error) {
 	return weaknesses, nil
 }
 
-func GetAllPokemons() ([]Pokemon, error) {
+func GetAllPokemons(page int) ([]Pokemon, error) {
 
 	var arraypokemon []Pokemon
 	var pokemon Pokemon
@@ -137,9 +137,12 @@ func GetAllPokemons() ([]Pokemon, error) {
 
 	queryPokemon :=
 		`SELECT *
-		FROM Pokemon;`
+		FROM Pokemon
+		ORDER BY ID_POKEMON
+		LIMIT 20
+		OFFSET $1;`
 
-	rows, err := database.Query(queryPokemon)
+	rows, err := database.Query(queryPokemon, page)
 	defer rows.Close()
 
 	if err != nil {
