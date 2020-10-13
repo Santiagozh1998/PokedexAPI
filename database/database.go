@@ -128,17 +128,16 @@ func getPokemonWeaknesses(id string) ([]Type, error) {
 
 func GetAllPokemons(page int) ([]Pokemon, error) {
 
-	var arraypokemon []Pokemon
-	var pokemon Pokemon
 	database, err := GetConnection()
 	if err != nil {
 		return []Pokemon{}, err
 	}
 
+	var arraypokemon []Pokemon
+	var pokemon Pokemon
 	queryPokemon :=
 		`SELECT *
 		FROM Pokemon
-		ORDER BY ID_POKEMON
 		LIMIT 20
 		OFFSET $1;`
 
