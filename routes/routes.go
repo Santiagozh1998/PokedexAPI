@@ -51,28 +51,35 @@ func handlerGetPokemon(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
+
+	var page int
+	var err error
+	var totalpages int
+
+	totalpages, err = database.GetNumberofRowsPokemon()
+	if err != nil {
+		fmt.Println(err)
+	}
+	totalpages = (totalpages / 20) + 1
+
 	if len(r.URL.Query()["page"]) > 0 {
-		page, err := strconv.Atoi(r.URL.Query()["page"][0])
+		page, err = strconv.Atoi(r.URL.Query()["page"][0])
 		if err != nil {
-			fmt.Println(err)
-		} else {
-			if page >= 1 {
-				pokemon, err := database.GetAllPokemons((page - 1) * 20)
-				if err != nil {
-					fmt.Println(err)
-				}
-				json.NewEncoder(w).Encode(pokemon)
-			} else {
-				fmt.Println(err)
-			}
+			page = 1
 		}
 	} else {
-		pokemon, err := database.GetAllPokemons(0)
-		if err != nil {
-			fmt.Println(err)
-		}
-		json.NewEncoder(w).Encode(pokemon)
+		page = 1
 	}
+
+	pokemon, err := database.GetAllPokemons((page - 1) * 20)
+	if err != nil {
+		fmt.Println(err)
+	}
+	json.NewEncoder(w).Encode(PokemonPages{
+		TotalPages: totalpages,
+		Page:       page,
+		Results:    pokemon,
+	})
 }
 
 func handlerGetAllAbilities(w http.ResponseWriter, r *http.Request) {
@@ -96,41 +103,27 @@ func handlerGetAbility(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetPokemonForAbility(w http.ResponseWriter, r *http.Request) {
-
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		fmt.Println(err)
+	}
+	pokemon, err := database.GetPokemonsForAbility(id)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(pokemon)
 }
 
 func handlerGetPokemonForType(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func handlerRoutes(w http.ResponseWriter, r *http.Request) {
-
-	routeName := mux.CurrentRoute(r).GetName()
-
-	switch routeName {
-	case "GetPokemonsForType":
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
-		if err != nil {
-			log.Println(err)
-		}
-		pokemon, err := database.GetPokemonsForType(id)
-		if err != nil {
-			log.Println(err)
-		}
-		json.NewEncoder(w).Encode(pokemon)
-		break
-	case "GetPokemonsForAbility":
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
-		if err != nil {
-			fmt.Println(err)
-		}
-		pokemon, err := database.GetPokemonsForAbility(id)
-		if err != nil {
-			log.Println(err)
-		}
-		json.NewEncoder(w).Encode(pokemon)
-		break
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		log.Println(err)
 	}
+	pokemon, err := database.GetPokemonsForType(id)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(pokemon)
 }
 
 func AppRouter() *mux.Router {
@@ -143,8 +136,8 @@ func AppRouter() *mux.Router {
 	routes.HandleFunc("/api/abilities/{id}", CORS(handlerGetAbility)).Methods("GET")
 	routes.HandleFunc("/api/pokemon", CORS(handlerGetAllPokemons)).Methods("GET")
 	routes.HandleFunc("/api/pokemon/{pokedex}", CORS(handlerGetPokemon)).Methods("GET")
-	//routes.HandleFunc("/api/pokemon/types/{id}", handlerRoutes).Name("GetPokemonsForType").Methods("GET")
-	//routes.HandleFunc("/api/pokemon/abilities/{id}", handlerRoutes).Name("GetPokemonsForAbility").Methods("GET")
+	routes.HandleFunc("/api/pokemon/types/{id}", CORS(handlerGetPokemonForType)).Methods("GET")
+	routes.HandleFunc("/api/pokemon/abilities/{id}", CORS(handlerGetPokemonForAbility)).Methods("GET")
 
 	return routes
 }

@@ -4,6 +4,25 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func GetNumberofRowsPokemon() (int, error) {
+
+	var totalpokemon int
+	var err error
+
+	database, err := GetConnection()
+	if err != nil {
+		return 0, err
+	}
+
+	query := "SELECT COUNT(*) FROM Pokemon;"
+	err = database.QueryRow(query).Scan(&totalpokemon)
+	if err != nil {
+		return 0, err
+	}
+
+	return totalpokemon, nil
+}
+
 func getPokemonAbilities(id string) ([]Ability, error) {
 
 	var err error
