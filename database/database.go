@@ -157,6 +157,7 @@ func GetAllPokemons(page int) ([]Pokemon, error) {
 	queryPokemon :=
 		`SELECT *
 		FROM Pokemon
+		ORDER BY ID_POKEMON
 		LIMIT 20
 		OFFSET $1;`
 
