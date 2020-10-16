@@ -1,0 +1,48 @@
+{{define "content"}}
+    <div class="container">
+        <div class="docs">
+            <h3>Documentacion</h3>
+            <div>
+                <h4>Obtener todos los pokemon</h4>
+                <p><strong>GET https://pokemonapigolang.herokuapp.com/api/pokemon?page={number}</strong></p>
+                <p>Hasta el momento solo se encuentran 493 pokemon. Para futuro se iran ingrensado los demas.</p>
+                <u>
+                    <li>
+                        <a href="https://pokemonapigolang.herokuapp.com/api/pokemon" target="_blank">
+                            https://pokemonapigolang.herokuapp.com/api/pokemon
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://pokemonapigolang.herokuapp.com/api/pokemon?page=10" target="_blank">
+                            https://pokemonapigolang.herokuapp.com/api/pokemon?page=10
+                        </a>
+                    </li>
+                </u>
+            </div>
+            <div>
+                <h4>Obtener un pokemon por su numero o nombre</h4>
+                <p><strong>GET https://pokemonapigolang.herokuapp.com/api/pokemon/{pokedex}</strong></p>
+                <p>
+                    El valor {pokedex} debe ser ingresado como una cadena Puede serl numero del pokemon o su nombre..
+                    <br>
+                    Ejemplo:
+                    <br>
+                    Tenemos a un pokemon con nombre Bulbasaur y numero 001, entonces contamos con dos formas de buscarlo:
+                    <br>
+                </p>
+                <u>
+                    <li>
+                        <a href="https://pokemonapigolang.herokuapp.com/api/pokemon/001" target="_blank">
+                            https://pokemonapigolang.herokuapp.com/api/pokemon/001
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://pokemonapigolang.herokuapp.com/api/pokemon/Bulbasaur" target="_blank">
+                            https://pokemonapigolang.herokuapp.com/api/pokemon/Bulbasaur
+                        </a>
+                    </li>
+                </u>
+            </div>
+        </div>
+    </div>
+{{end}}

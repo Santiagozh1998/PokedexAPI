@@ -1,0 +1,61 @@
+{{define "layout"}}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pokemon API</title>
+        <link rel="stylesheet" href="/static/css/normalize.css">
+        <link rel="stylesheet" href="/static/css/navbar.css">
+        <link rel="stylesheet" href="/static/css/style.css">
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="container">
+                <a class="logo" href="/">
+                    Pokemon API
+                </a>
+                <input type="checkbox" id="res-menu">   
+                <label for="res-menu">
+                    <i class="fa fa-bars" id="sign-one"></i>
+                    <i class="fa fa-times" id="sign-two"></i>
+                </label>
+                <ul>
+                    <li><a onclick="handlerCheck()" href="#">Inicio</a></li>
+                    <li><a onclick="handlerCheck()" href="#">Acerca</a></li>
+                    <li><a onclick="handlerCheck()" href="#">Documentacion</a></li>
+                </ul>
+            </div>
+        </nav>
+        
+        {{template "content" .}}
+
+        <script src="https://use.fontawesome.com/c357e01220.js"></script>
+        <script>
+            const handlerCheck = () => {
+    
+                if(screen.width <= 800) {
+    
+                    let checked = document.getElementById("res-menu").checked == true;
+                    
+                    if(checked) {
+                        document.getElementById("res-menu").checked = false;
+                    }
+                }
+            }
+    
+            window.addEventListener("scroll", function handlerScroll() {
+                console.log(window.scrollY)
+                if(screen.width <= 800) {
+    
+                    if(window.scrollY != 0) {
+                        document.getElementById("res-menu").checked = false;
+                    }
+    
+                    
+                }
+            })
+        </script>
+    </body>
+    </html>    
+{{end}}

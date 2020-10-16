@@ -1,0 +1,81 @@
+.Planta{
+    background: #9bcc50;
+}
+
+.Veneno{
+    background: #b97fc9;
+}
+
+.Fuego{
+    background: #fd7d24;
+}
+
+.Agua{
+    background: #4592c4;
+}
+
+.Hielo{
+    background: #51c4e7;
+}
+
+.Volador{
+    background: linear-gradient(180deg, #3dc7ef 50%, #bdb9b8 50%);
+}
+
+.Psíquico{
+    background: #f366b9;
+}
+
+.Eléctrico{
+    background: #eed535;
+}
+
+.Roca{
+    background: #a38c21;
+}
+
+.Tierra{
+    background: linear-gradient(180deg, #f7de3f 50%, #ab9842 50%);
+}
+
+.Normal{
+    background: #a4acaf;
+}
+
+.Acero{
+    background: #9eb7b8;
+}
+
+.Dragón{
+    background: linear-gradient(180deg, #53a4cf 50%, #f16e57 50%);
+}
+
+.Hada{
+    background: #fdb9e9;
+}
+
+.Fantasma{
+    background: #7b62a3;
+}
+
+.Bicho{
+    background: #729f3f;
+}
+
+.Lucha{
+    background: #d56723;
+}
+
+.Siniestro{
+    background: #707070;
+}
+
+.Planta, .Veneno, .Fuego, .Agua, .Hielo, .Volador, .Psíquico, .Eléctrico, .Roca, .Tierra, .Normal, .Acero, .Dragón, .Hada, .Fantasma, .Siniestro, .Bicho, .Lucha{
+    padding-top: 8px;
+    padding-bottom: 8px;
+    width: 110px;
+    font-size: 18px;
+    color: white;
+    display: inline-block;
+    border-radius: 5px;
+}

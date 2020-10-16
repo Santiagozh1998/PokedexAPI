@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"text/template"
 
 	"github.com/Santiagozh1998/PokedexAPI/database"
 	"github.com/gorilla/mux"
@@ -22,7 +23,11 @@ func CORS(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func handlerGetAllTypes(w http.ResponseWriter, r *http.Request) {
-	typespokemon, err := database.GetAllTypes()
+
+	var err error
+	var typespokemon []database.Type
+
+	typespokemon, err = database.GetAllTypes()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -30,11 +35,16 @@ func handlerGetAllTypes(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetType(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+
+	var id int
+	var typepokemon database.Type
+	var err error
+
+	id, err = strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		fmt.Println(err)
 	}
-	typepokemon, err := database.GetType(id)
+	typepokemon, err = database.GetType(id)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -42,8 +52,13 @@ func handlerGetType(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetPokemon(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["pokedex"]
-	pokemon, err := database.GetPokemon(id)
+
+	var id string
+	var pokemon database.Pokemon
+	var err error
+
+	id = mux.Vars(r)["pokedex"]
+	pokemon, err = database.GetPokemon(id)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -55,6 +70,7 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 	var page int
 	var err error
 	var totalpages int
+	var pokemon []database.Pokemon
 
 	totalpages, err = database.GetNumberofRowsPokemon()
 	if err != nil {
@@ -71,7 +87,7 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 		page = 1
 	}
 
-	pokemon, err := database.GetAllPokemons((page - 1) * 20)
+	pokemon, err = database.GetAllPokemons((page - 1) * 20)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -83,7 +99,11 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetAllAbilities(w http.ResponseWriter, r *http.Request) {
-	abilitiespokemon, err := database.GetAllAbilities()
+
+	var abilitiespokemon []database.Ability
+	var err error
+
+	abilitiespokemon, err = database.GetAllAbilities()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -91,11 +111,16 @@ func handlerGetAllAbilities(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetAbility(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+
+	var id int
+	var abilitypokemon database.Ability
+	var err error
+
+	id, err = strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		fmt.Println(err)
 	}
-	abilitypokemon, err := database.GetAbility(id)
+	abilitypokemon, err = database.GetAbility(id)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -126,10 +151,30 @@ func handlerGetPokemonForType(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(pokemon)
 }
 
+func handlerDocs(w http.ResponseWriter, r *http.Request) {
+
+	template := template.Must(template.ParseFiles(
+		"views/layout.html",
+		"views/templates/documentation.html"))
+	template.ExecuteTemplate(w, "layout", nil)
+}
+
+func handlerIndex(w http.ResponseWriter, r *http.Request) {
+
+	template := template.Must(template.ParseFiles(
+		"views/layout.html",
+		"views/templates/index.html"))
+	template.ExecuteTemplate(w, "layout", nil)
+}
+
 func AppRouter() *mux.Router {
 
 	routes := mux.NewRouter()
+	staticFiles := http.FileServer(http.Dir("views/assets/"))
+	routes.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticFiles))
 
+	routes.HandleFunc("/", handlerIndex)
+	routes.HandleFunc("/docs", handlerDocs)
 	routes.HandleFunc("/api/types", CORS(handlerGetAllTypes)).Methods("GET")
 	routes.HandleFunc("/api/types/{id}", CORS(handlerGetType)).Methods("GET")
 	routes.HandleFunc("/api/abilities", CORS(handlerGetAllAbilities)).Methods("GET")

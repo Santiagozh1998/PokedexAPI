@@ -22,6 +22,8 @@ func main() {
 		fmt.Println("DATABASE CONNECTION FAILED.")
 	}
 
+	//test.TestDatabase()
+
 	router := routes.AppRouter()
 	fmt.Println("Server running in 	port: http://localhost:" + port)
 	http.ListenAndServe(":"+port, router)
