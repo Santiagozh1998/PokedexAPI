@@ -1,15 +1,58 @@
 package database
 
 import (
+	"database/sql"
+
 	_ "github.com/lib/pq"
 )
+
+func GetNumberofRowsPokemonforType(id int) (int, error) {
+
+	var totalpokemon int
+	var err error
+	var database *sql.DB
+
+	database, err = GetConnection()
+	if err != nil {
+		return 0, err
+	}
+
+	query := "SELECT COUNT(*) FROM TypePokemon WHERE ID_TYPE = $1;"
+	err = database.QueryRow(query, id).Scan(&totalpokemon)
+	if err != nil {
+		return 0, err
+	}
+
+	return totalpokemon, nil
+}
+
+func GetNumberofRowsPokemonforAbility(id int) (int, error) {
+
+	var totalpokemon int
+	var err error
+	var database *sql.DB
+
+	database, err = GetConnection()
+	if err != nil {
+		return 0, err
+	}
+
+	query := "SELECT COUNT(*) FROM AbilityPokemon WHERE ID_ABILITY = $1;"
+	err = database.QueryRow(query, id).Scan(&totalpokemon)
+	if err != nil {
+		return 0, err
+	}
+
+	return totalpokemon, nil
+}
 
 func GetNumberofRowsPokemon() (int, error) {
 
 	var totalpokemon int
 	var err error
+	var database *sql.DB
 
-	database, err := GetConnection()
+	database, err = GetConnection()
 	if err != nil {
 		return 0, err
 	}
@@ -25,21 +68,24 @@ func GetNumberofRowsPokemon() (int, error) {
 
 func getPokemonAbilities(id string) ([]Ability, error) {
 
-	var err error
 	var abilities []Ability
-	queryAbility :=
-		`SELECT Ability.ID_ABILITY, NameAbility
-		FROM
-		(SELECT *
-		FROM AbilityPokemon
-		WHERE ID_POKEMON = $1) AS AP INNER JOIN Ability ON Ability.ID_ABILITY = AP.ID_ABILITY;`
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
 
-	database, err := GetConnection()
+	database, err = GetConnection()
 	if err != nil {
 		return []Ability{}, err
 	}
 
-	rows, err := database.Query(queryAbility, id)
+	queryAbility :=
+		`SELECT Ability.ID_ABILITY, NameAbility
+		FROM
+		(SELECT ID_ABILITY
+		FROM AbilityPokemon
+		WHERE ID_POKEMON = $1) AS AP INNER JOIN Ability ON Ability.ID_ABILITY = AP.ID_ABILITY;`
+
+	rows, err = database.Query(queryAbility, id)
 	defer rows.Close()
 
 	if err != nil {
@@ -49,7 +95,7 @@ func getPokemonAbilities(id string) ([]Ability, error) {
 		for rows.Next() {
 			var abilitypokemon Ability
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&abilitypokemon.IdAbility,
 				&abilitypokemon.NameAbility,
 			)
@@ -66,21 +112,24 @@ func getPokemonAbilities(id string) ([]Ability, error) {
 
 func getPokemonTypes(id string) ([]Type, error) {
 
-	var err error
 	var types []Type
-	queryType :=
-		`SELECT Type.ID_TYPE, NameType
-		FROM
-		(SELECT *
-		FROM TypePokemon
-		WHERE ID_POKEMON = $1) AS TP INNER JOIN Type ON Type.ID_TYPE = TP.ID_TYPE;`
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
 
-	database, err := GetConnection()
+	database, err = GetConnection()
 	if err != nil {
 		return []Type{}, err
 	}
 
-	rows, err := database.Query(queryType, id)
+	queryType :=
+		`SELECT Type.ID_TYPE, NameType
+		FROM
+		(SELECT ID_TYPE
+		FROM TypePokemon
+		WHERE ID_POKEMON = $1) AS TP INNER JOIN Type ON Type.ID_TYPE = TP.ID_TYPE;`
+
+	rows, err = database.Query(queryType, id)
 	defer rows.Close()
 
 	if err != nil {
@@ -90,7 +139,7 @@ func getPokemonTypes(id string) ([]Type, error) {
 		for rows.Next() {
 			var typepokemon Type
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&typepokemon.IdType,
 				&typepokemon.NameType,
 			)
@@ -108,19 +157,23 @@ func getPokemonTypes(id string) ([]Type, error) {
 func getPokemonWeaknesses(id string) ([]Type, error) {
 
 	var weaknesses []Type
-	queryWeakness :=
-		`SELECT Type.ID_TYPE, NameType
-		FROM
-		(SELECT *
-		FROM WeaknessPokemon
-		WHERE ID_POKEMON = $1) AS WP INNER JOIN Type ON Type.ID_TYPE = WP.ID_TYPE;`
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
 
-	database, err := GetConnection()
+	database, err = GetConnection()
 	if err != nil {
 		return []Type{}, err
 	}
 
-	rows, err := database.Query(queryWeakness, id)
+	queryWeakness :=
+		`SELECT Type.ID_TYPE, NameType
+		FROM
+		(SELECT ID_TYPE
+		FROM WeaknessPokemon
+		WHERE ID_POKEMON = $1) AS WP INNER JOIN Type ON Type.ID_TYPE = WP.ID_TYPE;`
+
+	rows, err = database.Query(queryWeakness, id)
 	defer rows.Close()
 
 	if err != nil {
@@ -130,7 +183,7 @@ func getPokemonWeaknesses(id string) ([]Type, error) {
 		for rows.Next() {
 			var weaknesspokemon Type
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&weaknesspokemon.IdType,
 				&weaknesspokemon.NameType,
 			)
@@ -147,13 +200,17 @@ func getPokemonWeaknesses(id string) ([]Type, error) {
 
 func GetAllPokemons(page int) ([]Pokemon, error) {
 
-	database, err := GetConnection()
+	var arraypokemon []Pokemon
+	var pokemon Pokemon
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
 	if err != nil {
 		return []Pokemon{}, err
 	}
 
-	var arraypokemon []Pokemon
-	var pokemon Pokemon
 	queryPokemon :=
 		`SELECT *
 		FROM Pokemon
@@ -161,7 +218,7 @@ func GetAllPokemons(page int) ([]Pokemon, error) {
 		LIMIT 20
 		OFFSET $1;`
 
-	rows, err := database.Query(queryPokemon, page)
+	rows, err = database.Query(queryPokemon, page)
 	defer rows.Close()
 
 	if err != nil {
@@ -170,7 +227,7 @@ func GetAllPokemons(page int) ([]Pokemon, error) {
 
 		for rows.Next() {
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&pokemon.Pokedex,
 				&pokemon.Name,
 				&pokemon.UrlImage,
@@ -205,7 +262,10 @@ func GetAllPokemons(page int) ([]Pokemon, error) {
 func GetPokemon(id string) (Pokemon, error) {
 
 	var pokemon Pokemon
-	database, err := GetConnection()
+	var err error
+	var database *sql.DB
+
+	database, err = GetConnection()
 	if err != nil {
 		return Pokemon{}, err
 	}
@@ -245,28 +305,36 @@ func GetPokemon(id string) (Pokemon, error) {
 	return pokemon, nil
 }
 
-func GetPokemonsForType(name int) ([]Pokemon, error) {
+func GetPokemonsForType(id int, page int) ([]Pokemon, error) {
 
 	var arraypokemon []Pokemon
 	var pokemon Pokemon
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Pokemon{}, err
+	}
+
 	queryType :=
 		`SELECT Pokemon.ID_POKEMON, NamePokemon, UrlImage, DescriptionPokemon, HeightPokemon, WeightPokemon
 		FROM
 		(SELECT ID_POKEMON
 		FROM
-		(SELECT *
+		(SELECT ID_TYPE
 		FROM Type
 		WHERE ID_TYPE = $1) AS Temporal
 		INNER JOIN TypePokemon ON Temporal.ID_TYPE = TypePokemon.ID_TYPE) AS FilterType
-		INNER JOIN Pokemon ON Pokemon.ID_POKEMON = FilterType.ID_POKEMON;`
+		INNER JOIN Pokemon ON Pokemon.ID_POKEMON = FilterType.ID_POKEMON
+		ORDER BY Pokemon.ID_POKEMON
+		LIMIT 20
+		OFFSET $2;
+		`
 
-	database, err := GetConnection()
-	if err != nil {
-		return []Pokemon{}, err
-	}
-
-	rows, err := database.Query(queryType,
-		name)
+	rows, err = database.Query(queryType,
+		id, page)
 	defer rows.Close()
 
 	if err != nil {
@@ -275,7 +343,7 @@ func GetPokemonsForType(name int) ([]Pokemon, error) {
 
 		for rows.Next() {
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&pokemon.Pokedex,
 				&pokemon.Name,
 				&pokemon.UrlImage,
@@ -283,6 +351,7 @@ func GetPokemonsForType(name int) ([]Pokemon, error) {
 				&pokemon.Height,
 				&pokemon.Weight,
 			)
+
 			if err != nil {
 				return []Pokemon{}, err
 			} else {
@@ -305,13 +374,22 @@ func GetPokemonsForType(name int) ([]Pokemon, error) {
 		}
 	}
 
-	return []Pokemon{}, err
+	return arraypokemon, err
 }
 
-func GetPokemonsForAbility(name int) ([]Pokemon, error) {
+func GetPokemonsForAbility(id int, page int) ([]Pokemon, error) {
 
 	var arraypokemon []Pokemon
 	var pokemon Pokemon
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Pokemon{}, err
+	}
+
 	queryAbility :=
 		`SELECT Pokemon.ID_POKEMON, NamePokemon, UrlImage, DescriptionPokemon, HeightPokemon, WeightPokemon
 		FROM
@@ -321,16 +399,14 @@ func GetPokemonsForAbility(name int) ([]Pokemon, error) {
 		FROM Ability
 		WHERE ID_ABILITY = $1) AS Temporal
 		INNER JOIN AbilityPokemon ON Temporal.ID_ABILITY = AbilityPokemon.ID_ABILITY) AS FilterAbility
-		INNER JOIN Pokemon ON Pokemon.ID_POKEMON = FilterAbility.ID_POKEMON;
+		INNER JOIN Pokemon ON Pokemon.ID_POKEMON = FilterAbility.ID_POKEMON
+		ORDER BY Pokemon.ID_POKEMON
+		LIMIT 20
+		OFFSET $2;
 		`
 
-	database, err := GetConnection()
-	if err != nil {
-		return []Pokemon{}, err
-	}
-
-	rows, err := database.Query(queryAbility,
-		name)
+	rows, err = database.Query(queryAbility,
+		id, page)
 	defer rows.Close()
 
 	if err != nil {
@@ -339,7 +415,7 @@ func GetPokemonsForAbility(name int) ([]Pokemon, error) {
 
 		for rows.Next() {
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&pokemon.Pokedex,
 				&pokemon.Name,
 				&pokemon.UrlImage,
@@ -375,18 +451,21 @@ func GetPokemonsForAbility(name int) ([]Pokemon, error) {
 func GetAllAbilities() ([]Ability, error) {
 
 	var abilities []Ability
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Ability{}, err
+	}
 
 	queryAbility :=
 		`SELECT *
 		FROM Ability
 		ORDER BY ID_ABILITY;`
 
-	database, err := GetConnection()
-	if err != nil {
-		return []Ability{}, err
-	}
-
-	rows, err := database.Query(queryAbility)
+	rows, err = database.Query(queryAbility)
 	defer rows.Close()
 
 	if err != nil {
@@ -396,7 +475,7 @@ func GetAllAbilities() ([]Ability, error) {
 		for rows.Next() {
 			var abilityPokemon Ability
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&abilityPokemon.IdAbility,
 				&abilityPokemon.NameAbility,
 			)
@@ -414,17 +493,21 @@ func GetAllAbilities() ([]Ability, error) {
 func GetAllTypes() ([]Type, error) {
 
 	var types []Type
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Type{}, err
+	}
+
 	queryType :=
 		`SELECT *
 		FROM Type
 		ORDER BY ID_TYPE;`
 
-	database, err := GetConnection()
-	if err != nil {
-		return []Type{}, err
-	}
-
-	rows, err := database.Query(queryType)
+	rows, err = database.Query(queryType)
 	defer rows.Close()
 
 	if err != nil {
@@ -434,7 +517,7 @@ func GetAllTypes() ([]Type, error) {
 		for rows.Next() {
 			var typePokemon Type
 
-			err := rows.Scan(
+			err = rows.Scan(
 				&typePokemon.IdType,
 				&typePokemon.NameType,
 			)
@@ -452,16 +535,18 @@ func GetAllTypes() ([]Type, error) {
 func GetType(id int) (Type, error) {
 
 	var typePokemon Type
+	var err error
+	var database *sql.DB
+
+	database, err = GetConnection()
+	if err != nil {
+		return Type{}, err
+	}
 
 	queryType :=
 		`SELECT *
 		FROM Type
 		WHERE ID_TYPE = $1;`
-
-	database, err := GetConnection()
-	if err != nil {
-		return Type{}, err
-	}
 
 	err = database.QueryRow(queryType,
 		id).Scan(
@@ -478,16 +563,18 @@ func GetType(id int) (Type, error) {
 func GetAbility(id int) (Ability, error) {
 
 	var abilityPokemon Ability
+	var err error
+	var database *sql.DB
+
+	database, err = GetConnection()
+	if err != nil {
+		return Ability{}, err
+	}
 
 	queryAbility :=
 		`SELECT *
 		FROM Ability
 		WHERE ID_ABILITY = $1;`
-
-	database, err := GetConnection()
-	if err != nil {
-		return Ability{}, err
-	}
 
 	err = database.QueryRow(queryAbility,
 		id).Scan(

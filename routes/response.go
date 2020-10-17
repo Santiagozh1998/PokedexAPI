@@ -8,8 +8,7 @@ type PokemonPages struct {
 	Results    []database.Pokemon
 }
 
-type ErrorNotFound struct {
-}
-
-type ErrorServerError struct {
+type Error struct {
+	Success bool
+	Message string
 }

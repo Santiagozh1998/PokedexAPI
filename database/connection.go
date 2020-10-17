@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -21,9 +20,9 @@ func ConnectDatabase() error {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
 	if databaseUrl == "" {
-		err := godotenv.Load(".env")
+		err = godotenv.Load(".env")
 		if err != nil {
-			log.Fatal("Error loading .env file")
+			fmt.Println("ENVIRONMENT VARIABLES ARE MISSING.")
 		}
 		databaseUrl = os.Getenv("DATABASE_URL")
 	}
