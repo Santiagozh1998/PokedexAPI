@@ -3,9 +3,11 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -19,7 +21,11 @@ func ConnectDatabase() error {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
 	if databaseUrl == "" {
-		databaseUrl = "postgres://bzsdjbvmkgkvxg:a6739ae2dbbdda69fdacb4f04b243f071b0c81b0039ce119ce1193d1f29f0171@ec2-52-204-20-42.compute-1.amazonaws.com:5432/db1l4723kdrhe8"
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+		databaseUrl = os.Getenv("DATABASE_URL")
 	}
 
 	once.Do(func() {
