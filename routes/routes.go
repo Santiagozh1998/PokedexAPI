@@ -68,7 +68,8 @@ func handlerGetPokemon(w http.ResponseWriter, r *http.Request) {
 func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 
 	var page int
-	var id int
+	var idtype int
+	var idability int
 	var err error
 	var totalpages int
 	var pokemon []database.Pokemon
@@ -82,54 +83,45 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 		page = 1
 	}
 
-	if len(r.URL.Query()["type"]) > 0 {
+	idtype, err = strconv.Atoi(r.URL.Query()["type"][0])
+	if err != nil {
+		fmt.Println(err)
+	}
 
-		id, err = strconv.Atoi(r.URL.Query()["type"][0])
+	idability, err = strconv.Atoi(r.URL.Query()["ability"][0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if len(r.URL.Query()["type"]) > 0 && len(r.URL.Query()["ability"]) > 0 {
+		totalpages, err = database.GetNumberofRowsPokemonforTypeAndAbility(idability, idtype)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		totalpages, err = database.GetNumberofRowsPokemonforType(id)
+	} else if len(r.URL.Query()["type"]) > 0 {
+		totalpages, err = database.GetNumberofRowsPokemonforType(idtype)
 		if err != nil {
 			fmt.Println(err)
 		}
-		totalpages = (totalpages / 20) + 1
-
-		pokemon, err = database.GetPokemonsForType(id, (page-1)*20)
-		if err != nil {
-			fmt.Println(err)
-		}
-
 	} else if len(r.URL.Query()["ability"]) > 0 {
-
-		id, err = strconv.Atoi(r.URL.Query()["ability"][0])
+		totalpages, err = database.GetNumberofRowsPokemonforAbility(idability)
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		totalpages, err = database.GetNumberofRowsPokemonforAbility(id)
-		if err != nil {
-			fmt.Println(err)
-		}
-		totalpages = (totalpages / 20) + 1
-
-		pokemon, err = database.GetPokemonsForAbility(id, (page-1)*20)
-		if err != nil {
-			fmt.Println(err)
-		}
-
 	} else {
 
 		totalpages, err = database.GetNumberofRowsPokemon()
 		if err != nil {
 			fmt.Println(err)
 		}
-		totalpages = (totalpages / 20) + 1
+	}
 
-		pokemon, err = database.GetAllPokemons((page - 1) * 20)
-		if err != nil {
-			fmt.Println(err)
-		}
+	totalpages = (totalpages / 20) + 1
+
+	pokemon, err = database.GetAllPokemons((page-1)*20, idtype, idability)
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	json.NewEncoder(w).Encode(PokemonPages{
