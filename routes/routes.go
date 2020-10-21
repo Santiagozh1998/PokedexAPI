@@ -83,34 +83,46 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 		page = 1
 	}
 
-	idtype, err = strconv.Atoi(r.URL.Query()["type"][0])
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	idability, err = strconv.Atoi(r.URL.Query()["ability"][0])
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	if len(r.URL.Query()["type"]) > 0 && len(r.URL.Query()["ability"]) > 0 {
+
+		idtype, err = strconv.Atoi(r.URL.Query()["type"][0])
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		idability, err = strconv.Atoi(r.URL.Query()["ability"][0])
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		totalpages, err = database.GetNumberofRowsPokemonforTypeAndAbility(idability, idtype)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 	} else if len(r.URL.Query()["type"]) > 0 {
+
+		idtype, err = strconv.Atoi(r.URL.Query()["type"][0])
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		totalpages, err = database.GetNumberofRowsPokemonforType(idtype)
 		if err != nil {
 			fmt.Println(err)
 		}
 	} else if len(r.URL.Query()["ability"]) > 0 {
+
+		idability, err = strconv.Atoi(r.URL.Query()["ability"][0])
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		totalpages, err = database.GetNumberofRowsPokemonforAbility(idability)
 		if err != nil {
 			fmt.Println(err)
 		}
 	} else {
-
 		totalpages, err = database.GetNumberofRowsPokemon()
 		if err != nil {
 			fmt.Println(err)
