@@ -121,21 +121,20 @@ func getPokemonAbilities(id string) ([]Ability, error) {
 
 	if err != nil {
 		return []Ability{}, err
-	} else {
+	}
 
-		for rows.Next() {
-			var abilitypokemon Ability
+	for rows.Next() {
+		var abilitypokemon Ability
 
-			err = rows.Scan(
-				&abilitypokemon.IdAbility,
-				&abilitypokemon.NameAbility,
-			)
-			if err != nil {
-				return []Ability{}, err
-			}
-
-			abilities = append(abilities, abilitypokemon)
+		err = rows.Scan(
+			&abilitypokemon.IdAbility,
+			&abilitypokemon.NameAbility,
+		)
+		if err != nil {
+			return []Ability{}, err
 		}
+
+		abilities = append(abilities, abilitypokemon)
 	}
 
 	return abilities, nil
@@ -165,21 +164,20 @@ func getPokemonTypes(id string) ([]Type, error) {
 
 	if err != nil {
 		return []Type{}, err
-	} else {
+	}
 
-		for rows.Next() {
-			var typepokemon Type
+	for rows.Next() {
+		var typepokemon Type
 
-			err = rows.Scan(
-				&typepokemon.IdType,
-				&typepokemon.NameType,
-			)
-			if err != nil {
-				return []Type{}, err
-			}
-
-			types = append(types, typepokemon)
+		err = rows.Scan(
+			&typepokemon.IdType,
+			&typepokemon.NameType,
+		)
+		if err != nil {
+			return []Type{}, err
 		}
+
+		types = append(types, typepokemon)
 	}
 
 	return types, nil
@@ -295,17 +293,15 @@ func GetAllPokemons(page int, idtype int, idability int) ([]Pokemon, error) {
 
 	if idtype != 0 && idability != 0 {
 		rows, err = database.Query(queryTypeAbility, idability, idtype, page)
-		defer rows.Close()
 	} else if idability != 0 {
 		rows, err = database.Query(queryAbility, idability, page)
-		defer rows.Close()
 	} else if idtype != 0 {
 		rows, err = database.Query(queryType, idtype, page)
-		defer rows.Close()
 	} else {
 		rows, err = database.Query(queryPokemon, page)
-		defer rows.Close()
 	}
+
+	defer rows.Close()
 
 	if err != nil {
 		return []Pokemon{}, err
@@ -371,20 +367,19 @@ func GetPokemon(id string) (Pokemon, error) {
 	if err != nil {
 
 		return Pokemon{}, err
-	} else {
+	}
 
-		pokemon.Abilities, err = getPokemonAbilities(pokemon.Pokedex)
-		if err != nil {
-			return Pokemon{}, err
-		}
-		pokemon.Types, err = getPokemonTypes(pokemon.Pokedex)
-		if err != nil {
-			return Pokemon{}, err
-		}
-		pokemon.Weaknesses, err = getPokemonWeaknesses(pokemon.Pokedex)
-		if err != nil {
-			return Pokemon{}, err
-		}
+	pokemon.Abilities, err = getPokemonAbilities(pokemon.Pokedex)
+	if err != nil {
+		return Pokemon{}, err
+	}
+	pokemon.Types, err = getPokemonTypes(pokemon.Pokedex)
+	if err != nil {
+		return Pokemon{}, err
+	}
+	pokemon.Weaknesses, err = getPokemonWeaknesses(pokemon.Pokedex)
+	if err != nil {
+		return Pokemon{}, err
 	}
 
 	return pokemon, nil
@@ -412,21 +407,20 @@ func GetAllAbilities() ([]Ability, error) {
 
 	if err != nil {
 		return []Ability{}, err
-	} else {
+	}
 
-		for rows.Next() {
-			var abilityPokemon Ability
+	for rows.Next() {
+		var abilityPokemon Ability
 
-			err = rows.Scan(
-				&abilityPokemon.IdAbility,
-				&abilityPokemon.NameAbility,
-			)
-			if err != nil {
-				return []Ability{}, err
-			}
-
-			abilities = append(abilities, abilityPokemon)
+		err = rows.Scan(
+			&abilityPokemon.IdAbility,
+			&abilityPokemon.NameAbility,
+		)
+		if err != nil {
+			return []Ability{}, err
 		}
+
+		abilities = append(abilities, abilityPokemon)
 	}
 
 	return abilities, nil
@@ -454,21 +448,20 @@ func GetAllTypes() ([]Type, error) {
 
 	if err != nil {
 		return []Type{}, err
-	} else {
+	}
 
-		for rows.Next() {
-			var typePokemon Type
+	for rows.Next() {
+		var typePokemon Type
 
-			err = rows.Scan(
-				&typePokemon.IdType,
-				&typePokemon.NameType,
-			)
-			if err != nil {
-				return []Type{}, err
-			}
-
-			types = append(types, typePokemon)
+		err = rows.Scan(
+			&typePokemon.IdType,
+			&typePokemon.NameType,
+		)
+		if err != nil {
+			return []Type{}, err
 		}
+
+		types = append(types, typePokemon)
 	}
 
 	return types, nil

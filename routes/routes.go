@@ -12,16 +12,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func CORS(next http.HandlerFunc) http.HandlerFunc {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-		next(w, r)
-	})
-}
-
 func handlerGetAllTypes(w http.ResponseWriter, r *http.Request) {
 
 	var err error
@@ -29,7 +19,10 @@ func handlerGetAllTypes(w http.ResponseWriter, r *http.Request) {
 
 	typespokemon, err = database.GetAllTypes()
 	if err != nil {
-		fmt.Println(err)
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 	json.NewEncoder(w).Encode(typespokemon)
 }
@@ -46,7 +39,10 @@ func handlerGetType(w http.ResponseWriter, r *http.Request) {
 	}
 	typepokemon, err = database.GetType(id)
 	if err != nil {
-		fmt.Println(err)
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 	json.NewEncoder(w).Encode(typepokemon)
 }
@@ -60,7 +56,10 @@ func handlerGetPokemon(w http.ResponseWriter, r *http.Request) {
 	id = mux.Vars(r)["pokedex"]
 	pokemon, err = database.GetPokemon(id)
 	if err != nil {
-		fmt.Println(err)
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 	json.NewEncoder(w).Encode(pokemon)
 }
@@ -74,50 +73,20 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 	var totalpages int
 	var pokemon []database.Pokemon
 
-	if len(r.URL.Query()["page"]) > 0 {
-		page, err = strconv.Atoi(r.URL.Query()["page"][0])
-		if err != nil {
-			page = 1
-		}
-	} else {
-		page = 1
-	}
+	page, idtype, idability = GetPropsFromURL(r)
 
-	if len(r.URL.Query()["type"]) > 0 && len(r.URL.Query()["ability"]) > 0 {
-
-		idtype, err = strconv.Atoi(r.URL.Query()["type"][0])
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		idability, err = strconv.Atoi(r.URL.Query()["ability"][0])
-		if err != nil {
-			fmt.Println(err)
-		}
+	if idtype != 0 && idability != 0 {
 
 		totalpages, err = database.GetNumberofRowsPokemonforTypeAndAbility(idability, idtype)
 		if err != nil {
 			fmt.Println(err)
 		}
-
-	} else if len(r.URL.Query()["type"]) > 0 {
-
-		idtype, err = strconv.Atoi(r.URL.Query()["type"][0])
-		if err != nil {
-			fmt.Println(err)
-		}
-
+	} else if idtype != 0 {
 		totalpages, err = database.GetNumberofRowsPokemonforType(idtype)
 		if err != nil {
 			fmt.Println(err)
 		}
-	} else if len(r.URL.Query()["ability"]) > 0 {
-
-		idability, err = strconv.Atoi(r.URL.Query()["ability"][0])
-		if err != nil {
-			fmt.Println(err)
-		}
-
+	} else if idability != 0 {
 		totalpages, err = database.GetNumberofRowsPokemonforAbility(idability)
 		if err != nil {
 			fmt.Println(err)
@@ -133,7 +102,10 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 
 	pokemon, err = database.GetAllPokemons((page-1)*20, idtype, idability)
 	if err != nil {
-		fmt.Println(err)
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 
 	json.NewEncoder(w).Encode(PokemonPages{
@@ -150,7 +122,10 @@ func handlerGetAllAbilities(w http.ResponseWriter, r *http.Request) {
 
 	abilitiespokemon, err = database.GetAllAbilities()
 	if err != nil {
-		fmt.Println(err)
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 	json.NewEncoder(w).Encode(abilitiespokemon)
 }
@@ -167,7 +142,10 @@ func handlerGetAbility(w http.ResponseWriter, r *http.Request) {
 	}
 	abilitypokemon, err = database.GetAbility(id)
 	if err != nil {
-		fmt.Println(err)
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 	json.NewEncoder(w).Encode(abilitypokemon)
 }
