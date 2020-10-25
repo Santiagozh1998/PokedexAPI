@@ -190,7 +190,7 @@ func GetPokemon(id string) (Pokemon, error) {
 	queryPokemon :=
 		`SELECT *
 		FROM Pokemon
-		WHERE ID_POKEMON = $1 OR NamePokemon = $1;`
+		WHERE ID_POKEMON = $1;`
 
 	err = database.QueryRow(queryPokemon, id).Scan(
 		&pokemon.Pokedex,
