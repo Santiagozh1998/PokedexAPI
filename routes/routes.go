@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -52,16 +53,28 @@ func handlerGetPokemon(w http.ResponseWriter, r *http.Request) {
 	var id string
 	var pokemon database.Pokemon
 	var err error
+	var match bool
 
 	id = mux.Vars(r)["pokedex"]
-	pokemon, err = database.GetPokemon(id)
-	if err != nil {
+	match, err = regexp.MatchString(`[0-9]`, id)
+	if match == false || err != nil {
 		json.NewEncoder(w).Encode(Error{
 			Success: false,
 			Message: " Internal Server Error. Please try later",
 		})
 	}
-	json.NewEncoder(w).Encode(pokemon)
+
+	if match == true {
+		pokemon, err = database.GetPokemon(id)
+		if err != nil {
+			json.NewEncoder(w).Encode(Error{
+				Success: false,
+				Message: " Internal Server Error. Please try later",
+			})
+		}
+		json.NewEncoder(w).Encode(pokemon)
+	}
+
 }
 
 func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
@@ -75,27 +88,12 @@ func handlerGetAllPokemons(w http.ResponseWriter, r *http.Request) {
 
 	page, idtype, idability = GetPropsFromURL(r)
 
-	if idtype != 0 && idability != 0 {
-
-		totalpages, err = database.GetNumberofRowsPokemonforTypeAndAbility(idability, idtype)
-		if err != nil {
-			fmt.Println(err)
-		}
-	} else if idtype != 0 {
-		totalpages, err = database.GetNumberofRowsPokemonforType(idtype)
-		if err != nil {
-			fmt.Println(err)
-		}
-	} else if idability != 0 {
-		totalpages, err = database.GetNumberofRowsPokemonforAbility(idability)
-		if err != nil {
-			fmt.Println(err)
-		}
-	} else {
-		totalpages, err = database.GetNumberofRowsPokemon()
-		if err != nil {
-			fmt.Println(err)
-		}
+	totalpages, err = database.GetNumberofRowsPokemon(idability, idtype)
+	if err != nil {
+		json.NewEncoder(w).Encode(Error{
+			Success: false,
+			Message: " Internal Server Error. Please try later",
+		})
 	}
 
 	totalpages = (totalpages / 20) + 1

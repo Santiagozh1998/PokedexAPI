@@ -6,78 +6,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func GetNumberofRowsPokemonforTypeAndAbility(idability int, idtype int) (int, error) {
-
-	var totalpokemon int
-	var err error
-	var database *sql.DB
-
-	database, err = GetConnection()
-	if err != nil {
-		return 0, err
-	}
-
-	query := `
-		SELECT COUNT(*)
-		FROM
-		(SELECT ID_POKEMON
-		FROM AbilityPokemon
-		WHERE ID_ABILITY = $1) AS FilterAbility
-		INNER JOIN
-		(SELECT ID_POKEMON
-		FROM TypePokemon
-		WHERE ID_TYPE = $2) AS FilterType
-		ON FilterAbility.ID_POKEMON = FilterType.ID_POKEMON;
-	`
-	err = database.QueryRow(query, idability, idtype).Scan(&totalpokemon)
-	if err != nil {
-		return 0, err
-	}
-
-	return totalpokemon, nil
-}
-
-func GetNumberofRowsPokemonforType(id int) (int, error) {
-
-	var totalpokemon int
-	var err error
-	var database *sql.DB
-
-	database, err = GetConnection()
-	if err != nil {
-		return 0, err
-	}
-
-	query := "SELECT COUNT(*) FROM TypePokemon WHERE ID_TYPE = $1;"
-	err = database.QueryRow(query, id).Scan(&totalpokemon)
-	if err != nil {
-		return 0, err
-	}
-
-	return totalpokemon, nil
-}
-
-func GetNumberofRowsPokemonforAbility(id int) (int, error) {
-
-	var totalpokemon int
-	var err error
-	var database *sql.DB
-
-	database, err = GetConnection()
-	if err != nil {
-		return 0, err
-	}
-
-	query := "SELECT COUNT(*) FROM AbilityPokemon WHERE ID_ABILITY = $1;"
-	err = database.QueryRow(query, id).Scan(&totalpokemon)
-	if err != nil {
-		return 0, err
-	}
-
-	return totalpokemon, nil
-}
-
-func GetNumberofRowsPokemon() (int, error) {
+func GetNumberofRowsPokemon(idability int, idtype int) (int, error) {
 
 	var totalpokemon int
 	var err error
@@ -89,141 +18,48 @@ func GetNumberofRowsPokemon() (int, error) {
 	}
 
 	query := "SELECT COUNT(*) FROM Pokemon;"
-	err = database.QueryRow(query).Scan(&totalpokemon)
-	if err != nil {
-		return 0, err
+	queryability := "SELECT COUNT(*) FROM AbilityPokemon WHERE ID_ABILITY = $1;"
+	querytype := "SELECT COUNT(*) FROM TypePokemon WHERE ID_TYPE = $1;"
+	querytypeability := `
+		SELECT COUNT(*)
+		FROM
+		(SELECT ID_POKEMON
+		FROM AbilityPokemon
+		WHERE ID_ABILITY = $1) AS FilterAbility
+		INNER JOIN
+		(SELECT ID_POKEMON
+		FROM TypePokemon
+		WHERE ID_TYPE = $2) AS FilterType
+		ON FilterAbility.ID_POKEMON = FilterType.ID_POKEMON;
+	`
+
+	if idability != 0 && idtype != 0 {
+
+		err = database.QueryRow(querytypeability, idability, idtype).Scan(&totalpokemon)
+		if err != nil {
+			return 0, err
+		}
+	} else if idability != 0 {
+
+		err = database.QueryRow(queryability, idability).Scan(&totalpokemon)
+		if err != nil {
+			return 0, err
+		}
+	} else if idtype != 0 {
+
+		err = database.QueryRow(querytype, idtype).Scan(&totalpokemon)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+
+		err = database.QueryRow(query).Scan(&totalpokemon)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	return totalpokemon, nil
-}
-
-func getPokemonAbilities(id string) ([]Ability, error) {
-
-	var abilities []Ability
-	var err error
-	var database *sql.DB
-	var rows *sql.Rows
-
-	database, err = GetConnection()
-	if err != nil {
-		return []Ability{}, err
-	}
-
-	queryAbility :=
-		`SELECT Ability.ID_ABILITY, NameAbility
-		FROM
-		(SELECT ID_ABILITY
-		FROM AbilityPokemon
-		WHERE ID_POKEMON = $1) AS AP INNER JOIN Ability ON Ability.ID_ABILITY = AP.ID_ABILITY;`
-
-	rows, err = database.Query(queryAbility, id)
-	defer rows.Close()
-
-	if err != nil {
-		return []Ability{}, err
-	}
-
-	for rows.Next() {
-		var abilitypokemon Ability
-
-		err = rows.Scan(
-			&abilitypokemon.IdAbility,
-			&abilitypokemon.NameAbility,
-		)
-		if err != nil {
-			return []Ability{}, err
-		}
-
-		abilities = append(abilities, abilitypokemon)
-	}
-
-	return abilities, nil
-}
-
-func getPokemonTypes(id string) ([]Type, error) {
-
-	var types []Type
-	var err error
-	var database *sql.DB
-	var rows *sql.Rows
-
-	database, err = GetConnection()
-	if err != nil {
-		return []Type{}, err
-	}
-
-	queryType :=
-		`SELECT Type.ID_TYPE, NameType
-		FROM
-		(SELECT ID_TYPE
-		FROM TypePokemon
-		WHERE ID_POKEMON = $1) AS TP INNER JOIN Type ON Type.ID_TYPE = TP.ID_TYPE;`
-
-	rows, err = database.Query(queryType, id)
-	defer rows.Close()
-
-	if err != nil {
-		return []Type{}, err
-	}
-
-	for rows.Next() {
-		var typepokemon Type
-
-		err = rows.Scan(
-			&typepokemon.IdType,
-			&typepokemon.NameType,
-		)
-		if err != nil {
-			return []Type{}, err
-		}
-
-		types = append(types, typepokemon)
-	}
-
-	return types, nil
-}
-
-func getPokemonWeaknesses(id string) ([]Type, error) {
-
-	var weaknesses []Type
-	var err error
-	var database *sql.DB
-	var rows *sql.Rows
-
-	database, err = GetConnection()
-	if err != nil {
-		return []Type{}, err
-	}
-
-	queryWeakness :=
-		`SELECT Type.ID_TYPE, NameType
-		FROM
-		(SELECT ID_TYPE
-		FROM WeaknessPokemon
-		WHERE ID_POKEMON = $1) AS WP INNER JOIN Type ON Type.ID_TYPE = WP.ID_TYPE;`
-
-	rows, err = database.Query(queryWeakness, id)
-	defer rows.Close()
-
-	if err != nil {
-		return []Type{}, err
-	}
-
-	for rows.Next() {
-		var weaknesspokemon Type
-
-		err = rows.Scan(
-			&weaknesspokemon.IdType,
-			&weaknesspokemon.NameType,
-		)
-		if err != nil {
-			return []Type{}, err
-		}
-
-		weaknesses = append(weaknesses, weaknesspokemon)
-	}
-
-	return weaknesses, nil
 }
 
 func GetAllPokemons(page int, idtype int, idability int) ([]Pokemon, error) {
@@ -521,4 +357,133 @@ func GetAbility(id int) (Ability, error) {
 	}
 
 	return abilityPokemon, nil
+}
+
+func getPokemonAbilities(id string) ([]Ability, error) {
+
+	var abilities []Ability
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Ability{}, err
+	}
+
+	queryAbility :=
+		`SELECT Ability.ID_ABILITY, NameAbility
+		FROM
+		(SELECT ID_ABILITY
+		FROM AbilityPokemon
+		WHERE ID_POKEMON = $1) AS AP INNER JOIN Ability ON Ability.ID_ABILITY = AP.ID_ABILITY;`
+
+	rows, err = database.Query(queryAbility, id)
+	defer rows.Close()
+
+	if err != nil {
+		return []Ability{}, err
+	}
+
+	for rows.Next() {
+		var abilitypokemon Ability
+
+		err = rows.Scan(
+			&abilitypokemon.IdAbility,
+			&abilitypokemon.NameAbility,
+		)
+		if err != nil {
+			return []Ability{}, err
+		}
+
+		abilities = append(abilities, abilitypokemon)
+	}
+
+	return abilities, nil
+}
+
+func getPokemonTypes(id string) ([]Type, error) {
+
+	var types []Type
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Type{}, err
+	}
+
+	queryType :=
+		`SELECT Type.ID_TYPE, NameType
+		FROM
+		(SELECT ID_TYPE
+		FROM TypePokemon
+		WHERE ID_POKEMON = $1) AS TP INNER JOIN Type ON Type.ID_TYPE = TP.ID_TYPE;`
+
+	rows, err = database.Query(queryType, id)
+	defer rows.Close()
+
+	if err != nil {
+		return []Type{}, err
+	}
+
+	for rows.Next() {
+		var typepokemon Type
+
+		err = rows.Scan(
+			&typepokemon.IdType,
+			&typepokemon.NameType,
+		)
+		if err != nil {
+			return []Type{}, err
+		}
+
+		types = append(types, typepokemon)
+	}
+
+	return types, nil
+}
+
+func getPokemonWeaknesses(id string) ([]Type, error) {
+
+	var weaknesses []Type
+	var err error
+	var database *sql.DB
+	var rows *sql.Rows
+
+	database, err = GetConnection()
+	if err != nil {
+		return []Type{}, err
+	}
+
+	queryWeakness :=
+		`SELECT Type.ID_TYPE, NameType
+		FROM
+		(SELECT ID_TYPE
+		FROM WeaknessPokemon
+		WHERE ID_POKEMON = $1) AS WP INNER JOIN Type ON Type.ID_TYPE = WP.ID_TYPE;`
+
+	rows, err = database.Query(queryWeakness, id)
+	defer rows.Close()
+
+	if err != nil {
+		return []Type{}, err
+	}
+
+	for rows.Next() {
+		var weaknesspokemon Type
+
+		err = rows.Scan(
+			&weaknesspokemon.IdType,
+			&weaknesspokemon.NameType,
+		)
+		if err != nil {
+			return []Type{}, err
+		}
+
+		weaknesses = append(weaknesses, weaknesspokemon)
+	}
+
+	return weaknesses, nil
 }
